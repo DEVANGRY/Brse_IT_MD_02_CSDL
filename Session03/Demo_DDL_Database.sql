@@ -221,7 +221,7 @@ CALL KiemTraGiaSanPham(15000);
 -- TRIGGER vs Tras
 
 CREATE TABLE check_log (
-	ma_check_log INT PRIMARY KEY,
+	ma_check_log INT PRIMARY KEY AUTO_INCREMENT,
     thoi_gian DATETIME
 );
 
@@ -240,3 +240,50 @@ BEGIN
     INSERT INTO check_log(thoi_gian) VALUES (NOW());
 END
 $$ DELIMITER ;
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, gia_san_pham , ma_kho_san_pham) VALUES
+	("SP011","Cà Phê Việt Nam", 19999 , 1);
+    
+
+CREATE TABLE lich_su_gia (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+    ma_san_pham VARCHAR(5),
+    gia_cu INT,
+    gia_moi INT,
+    thoi_gian_cap_nhat DATETIME
+)
+-- Tạo một trigger : Ghi log vào bảng lich_su_gia thay đổi dữ liệu khi người dùng cập nhật xong thông tin sản phẩm 
+
+DELIMITER $$
+CREATE TRIGGER trg_GhiLogCapNhap
+AFTER UPDATE 
+ON san_pham
+FOR EACH ROW 
+BEGIN
+	-- LOGIC xử lý tự động của hệ thống
+    INSERT INTO lich_su_gia (ma_san_pham , gia_cu , gia_moi , thoi_gian_cap_nhat) 
+    VALUES (OLD.ma_san_pham , OLD.gia_san_pham , NEW.gia_san_pham , NOW());
+END
+$$ DELIMITER ;
+
+UPDATE san_pham SET gia_san_pham = 25000
+WHERE ma_san_pham = "SP011";
+
+SELECT * FROM lich_su_gia;
+
+
+-- Tạo một trigger : Ghi log vào bảng lich_su_gia thay đổi dữ liệu khi người dùng cập nhật xong thông tin sản phẩm 
+
+
+ -- Tạo Một tiến trình thêm dữ liệu vào kho và thêm một sản phẩm mới vào kho đó 
+ 
+START TRANSACTION ;
+
+INSERT INTO kho (ma_kho , dia_chi_kho , so_dien_thoai_kho) 
+VALUES (3 , "HCM" , "08112312312");
+
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, gia_san_pham , ma_kho_san_pham) VALUES
+	("SP015","Cà Phê", 69999 , 3),
+	("SP016","Mỳ Tôm", 69999 , 3);
+    
+COMMIT;
