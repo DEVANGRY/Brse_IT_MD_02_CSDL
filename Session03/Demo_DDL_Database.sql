@@ -178,3 +178,65 @@ CALL soluongsanpham(@so_luong_san_pham);
 SELECT @so_luong_san_pham AS SoLuongSanPhamCoTrongKho;
 
 --  tạo một procedure trả về giá trị tổng tiền của toàn bộ sản phẩm có trong san_pham 
+
+-- DECLARE (CSDL) : Khai báo biến => Thường sẽ dùng ở trong một Procedure   
+
+-- Tạo một Procecedure  Thông báo "Hôm nay là buổi học cuối cùng của MD2"
+--  Cú Pháp : DECLARE ten_bien kieu_gia_tri
+
+-- let message = "Hôm nay là buổi học cuối cùng của MD2" 
+
+DELIMITER $$
+CREATE PROCEDURE ViDuVeDeclare ()
+BEGIN
+	DECLARE v_ThongBao VARCHAR(50) DEFAULT 'Hôm nay là buổi học cuối cùng của MD2';
+    SELECT v_ThongBao AS 'Thông Báo';
+END
+$$ DELIMITER ;
+
+DROP PROCEDURE ViDuVeDeclare;
+
+CALL ViDuVeDeclare();
+
+-- if else : cấu trúc điều kiện rẽ nhành
+ 
+-- tạo một procedure nhận vào giá tiến của sản phẩm => 
+-- sẽ in ra thông báo : (Nếu giá lớn hơn 10000 => Giá rất cao còn nhỏ hơn thì in ra thông báo giá bình thường)
+
+DELIMITER $$ 
+CREATE PROCEDURE KiemTraGiaSanPham (IN giaTienSanPham INT)
+BEGIN 
+	IF giaTienSanPham > 10000 THEN 
+		SELECT "Giá rất cao" AS "Kết Quả";
+	ELSE 
+		SELECT "Giá bình thường" AS "Kết Quả";
+	END IF;
+END
+$$ DELIMITER ;
+ 
+CALL KiemTraGiaSanPham(5000);
+
+CALL KiemTraGiaSanPham(15000);
+
+-- TRIGGER vs Tras
+
+CREATE TABLE check_log (
+	ma_check_log INT PRIMARY KEY,
+    thoi_gian DATETIME
+);
+
+-- Tạo một Trigger : Khi người dùng insert vào bảng sản phẩm thành công thì đẩy dữ liệu vào bảng check_log
+-- Bảng : Sản phẩm 
+-- Thao tác : insert
+-- Trigger sẽ hoạt động trước hay sau : Sau 
+
+DELIMITER $$
+CREATE TRIGGER trg_thong_bao_thanh_cong
+AFTER INSERT 
+ON san_pham
+FOR EACH ROW 
+BEGIN 
+	-- Code logic để tự động thực hiện khi  
+    INSERT INTO check_log(thoi_gian) VALUES (NOW());
+END
+$$ DELIMITER ;
